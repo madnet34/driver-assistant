@@ -1,75 +1,104 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-const GOOD_ZONES = ["Центр / Садовое","Москва-Сити","Белорусская","Павелецкая","Киевская"];
-const MID_ZONES = ["ВДНХ","Алексеевская","Проспект Мира"];
-const BAD_ZONES = ["Балашиха","Люберцы","Реутов","Котельники","Мытищи","За МКАД"];
-const ZONES = [...GOOD_ZONES, ...MID_ZONES, ...BAD_ZONES, "Аэропорт"];
+const POINTS = [
+  { name: "Белорусская", lat: 55.774, lng: 37.581 },
+  { name: "Тверская", lat: 55.765, lng: 37.603 },
+  { name: "Москва-Сити", lat: 55.747, lng: 37.536 },
+  { name: "Павелецкая", lat: 55.729, lng: 37.637 },
+  { name: "ВДНХ", lat: 55.829, lng: 37.637 },
+  { name: "Проспект Мира", lat: 55.776, lng: 37.642 }
+];
 
-function rpm(price, minutes) {
-  return Math.round((price / minutes) * 10) / 10;
-}
-
-function getAdvice(hour) {
-  if(hour>=6 && hour<7) return "ВДНХ → Проспект Мира";
-  if(hour>=7 && hour<9) return "Проспект Мира → Белорусская → Тверская";
-  if(hour>=9 && hour<11) return "Тверская / Белорусская / Сити";
-  if(hour>=11 && hour<16) return "Сити или отдых";
-  if(hour>=16 && hour<18) return "Белорусская / Павелецкая / Сити";
-  if(hour>=18 && hour<21) return "Сити или Белорусская";
-  if(hour>=21 && hour<23) return "Центр / Патрики";
-  return "Ночь — центр";
-}
+const SCHEDULE = [
+  { from: 6, to: 7, points: ["ВДНХ", "Проспект Мира"] },
+  { from: 7, to: 9, points: ["Проспект Мира","Белорусская","Тверская"] },
+  { from: 9, to: 11, points: ["Тверская","Белорусская","Москва-Сити"] },
+  { from: 11, to: 16, points: ["Москва-Сити"] },
+  { from: 16, to: 18, points: ["Белорусская","Павелецкая","Москва-Сити"] },
+  { from: 18, to: 21, points: ["Москва-Сити","Белорусская"] },
+  { from: 21, to: 23, points: ["Тверская","Центр"] },
+  { from: 23, to: 6, points: ["Центр"] }
+];
 
 export default function App() {
-  const [price,setPrice]=useState(900);
-  const [minutes,setMinutes]=useState(25);
-  const [pickup,setPickup]=useState(2);
-  const [hour,setHour]=useState(new Date().getHours());
-  const [destination,setDestination]=useState("Центр / Садовое");
+  const [hour, setHour] = useState(new Date().getHours());
+  const [points, setPoints] = useState([]);
 
-  const total = minutes + pickup * 2.5;
-  const value = rpm(price,total);
+  useEffect(() => {
+    const update = () => {
+      const h = new Date().getHours();
+      setHour(h);
 
-  let verdict = "БРАТЬ";
-  if(pickup > 5) verdict = "НЕ БРАТЬ";
-  else if(value < 25) verdict = "НЕ БРАТЬ";
-  else if(value < 30) verdict = "СЛАБО";
+      const current = SCHEDULE.find(s =>
+        s.from < s.to ? (h >= s.from && h < s.to) : (h >= s.from || h < s.to)
+      );
 
-  if(BAD_ZONES.includes(destination)) verdict = "НЕ БРАТЬ";
+      const active = current.points
+        .map(name => POINTS.find(p => p.name === name))
+        .filter(Boolean);
 
-  const advice = getAdvice(hour);
+      setPoints(active);
+    };
+
+    update();
+    const interval = setInterval(update, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const openNavigator = (lat, lng) => {
+    window.location.href = `yandexnavi://build_route_on_map?lat_to=${lat}&lon_to=${lng}`;
+  };
 
   return (
-    <div style={{padding:20,fontFamily:"Arial"}}>
-      <h2>🚕 Ассистент водителя</h2>
+    <div style={{
+      padding: 16,
+      fontFamily: "Arial",
+      background: "#0f172a",
+      color: "white",
+      minHeight: "100vh"
+    }}>
+      <h2 style={{marginBottom:10}}>🚕 Куда ехать сейчас</h2>
 
-      <p>Цена</p>
-      <input value={price} onChange={e=>setPrice(e.target.value)} />
+      <div style={{
+        background:"#1e293b",
+        padding:12,
+        borderRadius:12,
+        marginBottom:16
+      }}>
+        <div style={{fontSize:14,color:"#94a3b8"}}>Текущее время</div>
+        <div style={{fontSize:28,fontWeight:"bold"}}>{hour}:00</div>
+      </div>
 
-      <p>Минуты</p>
-      <input value={minutes} onChange={e=>setMinutes(e.target.value)} />
+      {points.map(p => (
+        <div key={p.name} style={{
+          background:"#1e293b",
+          padding:16,
+          borderRadius:16,
+          marginBottom:12
+        }}>
+          <div style={{fontSize:18,fontWeight:"bold"}}>{p.name}</div>
 
-      <p>Подача км</p>
-      <input value={pickup} onChange={e=>setPickup(e.target.value)} />
+          <button
+            onClick={() => openNavigator(p.lat, p.lng)}
+            style={{
+              marginTop:10,
+              width:"100%",
+              height:50,
+              borderRadius:12,
+              border:"none",
+              background:"#22c55e",
+              color:"white",
+              fontSize:16,
+              fontWeight:"bold"
+            }}
+          >
+            🚗 Поехать сюда
+          </button>
+        </div>
+      ))}
 
-      <p>Час</p>
-      <input value={hour} onChange={e=>setHour(e.target.value)} />
-
-      <p>Куда везёт</p>
-      <select value={destination} onChange={e=>setDestination(e.target.value)}>
-        {ZONES.map(z => <option key={z}>{z}</option>)}
-      </select>
-
-      <h2>{verdict}</h2>
-      <p>{value} ₽/мин</p>
-
-      <h3>Куда ехать:</h3>
-      <p>{advice}</p>
-
-      <div style={{marginTop:20}}>
-        <button onClick={()=>{setPrice(700);setMinutes(20);setPickup(2)}}>Короткий</button>
-        <button onClick={()=>{setPrice(1200);setMinutes(40);setPickup(3)}}>Длинный</button>
-        <button onClick={()=>{setPrice(2200);setMinutes(55);setPickup(3);setDestination("Аэропорт")}}>Аэропорт</button>
+      <div style={{marginTop:20,fontSize:12,color:"#94a3b8"}}>
+        Обновляется автоматически
       </div>
     </div>
   );
