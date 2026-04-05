@@ -7,7 +7,7 @@ const ALL_POINTS = [
   { name: "Проспект Мира", lat: 55.7802, lng: 37.6342, type: "medium" },
   { name: "Белорусская", lat: 55.7764, lng: 37.5849, type: "strong" },
   { name: "Тверская", lat: 55.7658, lng: 37.6051, type: "strong" },
-  { name: "Москва-Сити", lat: 55.7494, lng: 37.5370, type: "strong" },
+  { name: "Москва-Сити", lat: 55.7494, lng: 37.537, type: "strong" },
   { name: "Павелецкая", lat: 55.7301, lng: 37.6376, type: "strong" },
   { name: "Киевская", lat: 55.7431, lng: 37.5653, type: "strong" },
   { name: "Патрики", lat: 55.7648, lng: 37.5924, type: "medium" },
@@ -142,7 +142,7 @@ export default function App() {
           style={{ height: "45vh", width: "100%" }}
         >
           <TileLayer
-            attribution='&copy; OpenStreetMap'
+            attribution="&copy; OpenStreetMap"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {activePoints.map((p) => (
