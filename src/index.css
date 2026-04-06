@@ -1,0 +1,138 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Inter, Arial, sans-serif;
+  background: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-shell {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.map-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+}
+
+.ui-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.top-card {
+  pointer-events: auto;
+  align-self: stretch;
+  background: rgba(15, 23, 42, 0.88);
+  color: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.main-point {
+  font-size: 28px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.bottom-sheet {
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 24px;
+  padding: 14px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.18);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.info-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.info-card-wide {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.nav-button {
+  width: 100%;
+  border: 0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #111827;
+  color: white;
+  cursor: pointer;
+}
+
+.nav-button:active {
+  transform: scale(0.99);
+}
+
+.leaflet-control-container {
+  z-index: 2;
+}
