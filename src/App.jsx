@@ -1,25 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Circle, CircleMarker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import "./index.css";
 
 const GOOD = [
-  [55.76, 37.62],
-  [55.75, 37.53]
+  { name: "Центр", coords: [55.76, 37.62] },
+  { name: "Москва-Сити", coords: [55.75, 37.53] }
 ];
 
 const MID = [
-  [55.8, 37.6]
+  { name: "Проспект Мира", coords: [55.8, 37.6] }
 ];
 
 const BAD = [
-  [55.81, 37.94]
+  { name: "За МКАД", coords: [55.81, 37.94] }
 ];
 
 function getAdvice(hour) {
-  if (hour >= 6 && hour < 10) return "Езжай в центр / Белорусская";
-  if (hour >= 10 && hour < 16) return "Сити или пауза";
-  if (hour >= 16 && hour < 20) return "Центр / Павелецкая";
-  return "Центр / ночная работа";
+  if (hour >= 6 && hour < 10) {
+    return {
+      main: "Белорусская",
+      backup: "Москва-Сити",
+      avoid: "спальные районы",
+      text: "Утренний поток. Держись деловых и центральных точек."
+    };
+  }
+
+  if (hour >= 10 && hour < 16) {
+    return {
+      main: "Москва-Сити",
+      backup: "Центр",
+      avoid: "дальние подачи",
+      text: "Днём лучше работать короткие и средние поездки."
+    };
+  }
+
+  if (hour >= 16 && hour < 20) {
+    return {
+      main: "Павелецкая",
+      backup: "Тверская",
+      avoid: "пустые стоянки",
+      text: "Вечерний спрос. Смещайся ближе к центру."
+    };
+  }
+
+  return {
+    main: "Центр",
+    backup: "Белорусская",
+    avoid: "долгий простой",
+    text: "Ночной режим. Держись центральных точек."
+  };
 }
 
 export default function App() {
@@ -48,17 +78,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const i = setInterval(() => {
+    const timer = setInterval(() => {
       const now = Date.now();
-      if (now - lastMove > 15 * 60 * 1000) {
-        if (Notification.permission === "granted") {
-          new Notification("Переместитесь");
-        }
+
+      if (
+        "Notification" in window &&
+        Notification.permission === "granted" &&
+        now - lastMove > 15 * 60 * 1000
+      ) {
+        new Notification("Переместитесь");
       }
+
       setHour(new Date().getHours());
     }, 60000);
 
-    return () => clearInterval(i);
+    return () => clearInterval(timer);
   }, [lastMove]);
 
   useEffect(() => {
@@ -70,64 +104,87 @@ export default function App() {
   const advice = getAdvice(hour);
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        position: "relative",
-        overflow: "hidden"
-      }}
-    >
-      <MapContainer
-        center={pos || [55.75, 37.61]}
-        zoom={11}
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-        {GOOD.map((c, i) => (
-          <Circle key={`good-${i}`} center={c} radius={800} pathOptions={{ color: "green" }} />
-        ))}
-        {MID.map((c, i) => (
-          <Circle key={`mid-${i}`} center={c} radius={800} pathOptions={{ color: "orange" }} />
-        ))}
-        {BAD.map((c, i) => (
-          <Circle key={`bad-${i}`} center={c} radius={800} pathOptions={{ color: "red" }} />
-        ))}
-
-        {pos && <CircleMarker center={pos} radius={10} pathOptions={{ color: "blue" }} />}
-      </MapContainer>
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: 20,
-          left: 10,
-          right: 10,
-          zIndex: 1000,
-          background: "#fff",
-          padding: 12,
-          borderRadius: 12,
-          boxShadow: "0 6px 20px rgba(0,0,0,0.2)"
-        }}
-      >
-        <b>Куда ехать:</b> {advice}
-        <br />
-        <button
-          style={{
-            marginTop: 10,
-            padding: "10px 14px",
-            borderRadius: 10,
-            border: "none",
-            background: "#111",
-            color: "#fff",
-            fontSize: 16
-          }}
-          onClick={() => {
-            window.location.href = "yandexnavi://build_route_on_map";
-          }}
+    <div className="app-shell">
+      <div className="map-layer">
+        <MapContainer
+          center={pos || [55.75, 37.61]}
+          zoom={11}
+          className="map"
         >
-          Навигация
-        </button>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+          {GOOD.map((item) => (
+            <Circle
+              key={item.name}
+              center={item.coords}
+              radius={900}
+              pathOptions={{ color: "#22c55e", fillColor: "#22c55e", fillOpacity: 0.2 }}
+            />
+          ))}
+
+          {MID.map((item) => (
+            <Circle
+              key={item.name}
+              center={item.coords}
+              radius={900}
+              pathOptions={{ color: "#f59e0b", fillColor: "#f59e0b", fillOpacity: 0.2 }}
+            />
+          ))}
+
+          {BAD.map((item) => (
+            <Circle
+              key={item.name}
+              center={item.coords}
+              radius={900}
+              pathOptions={{ color: "#ef4444", fillColor: "#ef4444", fillOpacity: 0.2 }}
+            />
+          ))}
+
+          {pos && (
+            <CircleMarker
+              center={pos}
+              radius={10}
+              pathOptions={{ color: "#2563eb", fillColor: "#2563eb", fillOpacity: 1 }}
+            />
+          )}
+        </MapContainer>
+      </div>
+
+      <div className="ui-layer">
+        <div className="top-card">
+          <div className="badge">🚕 Driver Assistant</div>
+          <div className="title">Куда ехать сейчас</div>
+          <div className="main-point">{advice.main}</div>
+          <div className="subtitle">{advice.text}</div>
+        </div>
+
+        <div className="bottom-sheet">
+          <div className="grid">
+            <div className="info-card">
+              <div className="label">Основная точка</div>
+              <div className="value">{advice.main}</div>
+            </div>
+
+            <div className="info-card">
+              <div className="label">Запасная</div>
+              <div className="value">{advice.backup}</div>
+            </div>
+
+            <div className="info-card info-card-wide">
+              <div className="label">Избегать</div>
+              <div className="value">{advice.avoid}</div>
+            </div>
+          </div>
+
+          <button
+            className="nav-button"
+            onClick={() => {
+              window.location.href = "yandexnavi://build_route_on_map";
+            }}
+          >
+            Открыть в Яндекс Навигаторе
+          </button>
+        </div>
       </div>
     </div>
   );
